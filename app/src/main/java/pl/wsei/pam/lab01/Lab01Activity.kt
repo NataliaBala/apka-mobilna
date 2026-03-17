@@ -1,47 +1,48 @@
 package pl.wsei.pam.lab01
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : AppCompatActivity() {
+class Lab01Activity : AppCompatActivity() {
 
-    lateinit var mLayout: LinearLayout
-    lateinit var mTitle: TextView
-    lateinit var mProgress: ProgressBar
+    private lateinit var mLayout: LinearLayout
+    private lateinit var mTitle: TextView
+    private lateinit var mProgress: ProgressBar
 
-    var mBoxes: MutableList<CheckBox> = mutableListOf()
+    private val mBoxes: MutableList<CheckBox> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_lab01)
 
+        // 🔥 MUSI odpowiadać ID w XML: android:id="@+id/main"
         mLayout = findViewById(R.id.main)
 
-        mTitle = TextView(this)
-        mTitle.text = "Laboratorium 2"
-        mTitle.textSize = 24f
-        mTitle.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+        // --- Tytuł ---
+        mTitle = TextView(this).apply {
+            text = "Laboratorium 1"
+            textSize = 24f
+            textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+        }
         mLayout.addView(mTitle)
 
+        // --- Zadania ---
         for (i in 1..6) {
 
-            val row = LinearLayout(this)
-            row.orientation = LinearLayout.HORIZONTAL
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+            }
 
-            val checkBox = CheckBox(this)
-            checkBox.text = "Zadanie $i"
-            checkBox.isEnabled = false
+            val checkBox = CheckBox(this).apply {
+                text = "Zadanie $i"
+                isEnabled = false
+            }
 
-            val button = Button(this).also {
+            val button = Button(this).apply {
+                text = "Testuj"
 
-                it.text = "Testuj"
-
-                it.setOnClickListener {
+                setOnClickListener {
 
                     val result = when (i) {
 
@@ -85,29 +86,29 @@ class MainActivity : AppCompatActivity() {
                         checkBox.isChecked = true
                         mProgress.progress += 100 / 6
                     }
-
                 }
             }
 
             row.addView(checkBox)
             row.addView(button)
-
             mLayout.addView(row)
 
             mBoxes.add(checkBox)
         }
 
+        // --- ProgressBar ---
         mProgress = ProgressBar(
             this,
             null,
-            androidx.appcompat.R.attr.progressBarStyle,
-            androidx.appcompat.R.style.Widget_AppCompat_ProgressBar_Horizontal
-        )
+            androidx.appcompat.R.attr.progressBarStyleHorizontal
+        ).apply {
+            max = 100
+        }
 
-        mProgress.max = 100
         mLayout.addView(mProgress)
     }
 
+    // --- TASKI ---
 
     private fun task11(a: Int, b: Int): Double {
         return a.toDouble() / b
@@ -117,12 +118,11 @@ class MainActivity : AppCompatActivity() {
         return "$a + $b = ${a + b}"
     }
 
-    fun task13(a: Double, b: Float): Boolean {
+    private fun task13(a: Double, b: Float): Boolean {
         return a >= 0 && a < b
     }
 
-    fun task14(a: Int, b: Int): String {
-
+    private fun task14(a: Int, b: Int): String {
         return if (b >= 0) {
             "$a + $b = ${a + b}"
         } else {
@@ -130,8 +130,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun task15(degree: String): Int {
-
+    private fun task15(degree: String): Int {
         return when (degree.lowercase()) {
             "bardzo dobry" -> 5
             "dobry" -> 4
@@ -142,14 +141,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun task16(store: Map<String, UInt>, asset: Map<String, UInt>): UInt {
+    private fun task16(store: Map<String, UInt>, asset: Map<String, UInt>): UInt {
 
         var minItems = UInt.MAX_VALUE
 
         for ((key, value) in asset) {
 
             val available = store[key] ?: return 0U
-
             val possible = available / value
 
             if (possible < minItems) {
