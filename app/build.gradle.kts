@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "pl.wsei.pam.lab01"
+    namespace = "pl.wsei.pam"
     compileSdk = 34
 
     defaultConfig {
