@@ -1,9 +1,10 @@
 package pl.wsei.pam.lab02
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import lab03.Lab03Activity
 import pl.wsei.pam.R
 
 class Lab02Activity : AppCompatActivity() {
@@ -25,7 +26,11 @@ class Lab02Activity : AppCompatActivity() {
         if (tokens != null && tokens.size == 2) {
             val rows = tokens[0].toInt()
             val columns = tokens[1].toInt()
-            Toast.makeText(this, "rows: ${rows}, columns: ${columns}", Toast.LENGTH_SHORT).show()
+            
+            val intent = Intent(this, Lab03Activity::class.java)
+            intent.putExtra("rows", rows)
+            intent.putExtra("columns", columns)
+            startActivity(intent)
         }
     }
 }
