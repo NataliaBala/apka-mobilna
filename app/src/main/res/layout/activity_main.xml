@@ -23,4 +23,12 @@
         android:text="Lab02"
         android:onClick="onClickMainBtnRunLab02"/>
 
+    <Button
+        android:id="@+id/mainBtnRunLab06"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Lab06 (Compose)"
+        android:onClick="onClickMainBtnRunLab06"/>
+
 </LinearLayout>

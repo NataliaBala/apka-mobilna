@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import lab03.Lab03Activity
+import pl.wsei.pam.lab03.Lab03Activity
 import pl.wsei.pam.R
 
 class Lab02Activity : AppCompatActivity() {

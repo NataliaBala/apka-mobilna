@@ -75,8 +75,6 @@ class MemoryBoardView(
         R.drawable.baseline_rocket_launch_24,
         R.drawable.baseline_audiotrack_24,
         R.drawable.baseline_rocket_24,
-        R.drawable.ic_launcher_foreground, // Dodaję tymczasowo systemowe ikony, żeby było ich dość
-        R.drawable.ic_launcher_background,
         android.R.drawable.ic_menu_gallery,
         android.R.drawable.ic_menu_camera,
         android.R.drawable.ic_menu_slideshow,
@@ -87,18 +85,19 @@ class MemoryBoardView(
     )
     private val deckResource: Int = R.drawable.deck
     private var onGameChangeStateListener: (MemoryGameEvent) -> Unit = { }
-    private val matchedPair: Stack<Tile> = Stack()
+    private val matchedPair: Stack<Tile> = Stack<Tile>()
     private val logic: MemoryGameLogic = MemoryGameLogic(cols * rows / 2)
+
+    var isLocked: Boolean = false
 
     init {
         val boardIcons: MutableList<Int> = mutableListOf()
         val totalTiles = cols * rows
-        
+
         if (savedIcons != null && savedIcons.size == totalTiles) {
             boardIcons.addAll(savedIcons.toList())
         } else {
             val neededPairs = totalTiles / 2
-            // Bierzemy tyle ikon ile potrzebujemy, jeśli mamy za mało, powtarzamy listę
             val iconsToUse = mutableListOf<Int>()
             while (iconsToUse.size < neededPairs) {
                 iconsToUse.addAll(icons.shuffled())
@@ -118,6 +117,7 @@ class MemoryBoardView(
             for (col in 0 until cols) {
                 val btn = ImageButton(gridLayout.context).also {
                     it.tag = "${row}x${col}"
+                    // POPRAWKA: Użycie standardowego GridLayout.LayoutParams
                     val layoutParams = GridLayout.LayoutParams()
                     layoutParams.width = 0
                     layoutParams.height = 0
@@ -127,18 +127,17 @@ class MemoryBoardView(
                     it.layoutParams = layoutParams
                     gridLayout.addView(it)
                 }
-                
-                // Zabezpieczenie przed wyjściem poza zakres, jeśli lista ikon jest mimo wszystko za krótka
+
                 val iconRes = if (iconIndex < boardIcons.size) boardIcons[iconIndex] else icons[0]
                 addTile(btn, iconRes)
-                
+
                 if (savedRevealed != null && iconIndex < savedRevealed.size && savedRevealed[iconIndex]) {
                     tiles[btn.tag.toString()]?.revealed = true
                 }
                 iconIndex++
             }
         }
-        
+
         if (savedRevealed != null) {
             val revealedCount = savedRevealed.count { it }
             logic.setMatches(revealedCount / 2)
@@ -166,14 +165,21 @@ class MemoryBoardView(
     }
 
     private fun onClickTile(v: View) {
+        if (isLocked) return
+
         val tile = tiles[v.tag] ?: return
         if (tile.revealed) return
-        
+
         matchedPair.push(tile)
         val matchResult = logic.process {
             tile.tileResource
         }
-        onGameChangeStateListener(MemoryGameEvent(matchedPair.toList(), matchResult))
+
+        val eventTiles = mutableListOf<Tile>()
+        eventTiles.addAll(matchedPair)
+
+        onGameChangeStateListener(MemoryGameEvent(eventTiles, matchResult))
+
         if (matchResult != GameStates.Matching) {
             matchedPair.clear()
         }

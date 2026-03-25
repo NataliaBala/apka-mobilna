@@ -22,6 +22,10 @@
             android:name=".lab02.Lab02Activity"
             android:exported="false" />
         <activity
+            android:name=".lab06.Lab06Activity"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
