@@ -1,11 +1,13 @@
 package pl.wsei.pam.lab06
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,9 +82,16 @@ class Lab06Activity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+    val tasks = remember { mutableStateListOf(*todoTasks().toTypedArray()) }
+    
     NavHost(navController = navController, startDestination = "list") {
-        composable("list") { ListScreen(navController = navController) }
-        composable("form") { FormScreen(navController = navController) }
+        composable("list") { ListScreen(navController = navController, tasks = tasks) }
+        composable("form") { 
+            FormScreen(
+                navController = navController, 
+                onAddTask = { newTask -> tasks.add(newTask) }
+            ) 
+        }
     }
 }
 
@@ -91,8 +101,10 @@ fun AppTopBar(
     navController: NavController,
     title: String,
     showBackIcon: Boolean,
-    route: String
+    route: String,
+    onActionClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -110,10 +122,9 @@ fun AppTopBar(
             }
         },
         actions = {
-            // Logika zgodna z instrukcją: if (route !== "form")
-            if (route != "form") {
+            if (route == "list") { // Jesteśmy w Formularzu, pokazujemy Zapisz
                 OutlinedButton(
-                    onClick = { navController.navigate("list") }
+                    onClick = onActionClick
                 ) {
                     Text(text = "Zapisz", fontSize = 18.sp)
                 }
@@ -121,7 +132,7 @@ fun AppTopBar(
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(imageVector = Icons.Default.Settings, contentDescription = "")
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { (context as? Activity)?.finish() }) {
                     Icon(imageVector = Icons.Default.Home, contentDescription = "")
                 }
             }
@@ -130,7 +141,7 @@ fun AppTopBar(
 }
 
 @Composable
-fun ListScreen(navController: NavController) {
+fun ListScreen(navController: NavController, tasks: MutableList<TodoTask>) {
     Scaffold(
         topBar = {
             AppTopBar(
@@ -154,8 +165,13 @@ fun ListScreen(navController: NavController) {
         },
         content = { padding ->
             LazyColumn(modifier = Modifier.padding(padding)) {
-                items(items = todoTasks()) { item ->
-                    ListItem(item = item)
+                itemsIndexed(items = tasks) { index, item ->
+                    ListItem(
+                        item = item,
+                        onCheckedChange = { isChecked ->
+                            tasks[index] = item.copy(isDone = isChecked)
+                        }
+                    )
                 }
             }
         }
@@ -163,7 +179,7 @@ fun ListScreen(navController: NavController) {
 }
 
 @Composable
-fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
+fun ListItem(item: TodoTask, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
@@ -193,7 +209,7 @@ fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Deadline: ${item.deadline.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}")
-                Checkbox(checked = item.isDone, onCheckedChange = {})
+                Checkbox(checked = item.isDone, onCheckedChange = onCheckedChange)
             }
         }
     }
@@ -201,8 +217,9 @@ fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormScreen(navController: NavController) {
+fun FormScreen(navController: NavController, onAddTask: (TodoTask) -> Unit) {
     var title by remember { mutableStateOf("") }
+    var priority by remember { mutableStateOf(Priority.Low) }
     var showDatePicker by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val datePickerState = rememberDatePickerState()
@@ -213,7 +230,13 @@ fun FormScreen(navController: NavController) {
                 navController = navController,
                 title = "Form",
                 showBackIcon = true,
-                route = "list"
+                route = "list",
+                onActionClick = {
+                    if (title.isNotBlank()) {
+                        onAddTask(TodoTask(title, selectedDate, false, priority))
+                        navController.navigate("list")
+                    }
+                }
             )
         },
         content = { padding ->
@@ -225,6 +248,21 @@ fun FormScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
                 
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(text = "Priorytet:", style = MaterialTheme.typography.bodyLarge)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    Priority.values().forEach { p ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = (priority == p),
+                                onClick = { priority = p }
+                            )
+                            Text(text = p.name)
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Button(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {

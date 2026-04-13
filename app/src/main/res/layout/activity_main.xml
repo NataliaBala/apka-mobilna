@@ -24,6 +24,14 @@
         android:onClick="onClickMainBtnRunLab02"/>
 
     <Button
+        android:id="@+id/mainBtnRunLab03"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Lab03 (Memory)"
+        android:onClick="onClickMainBtnRunLab03"/>
+
+    <Button
         android:id="@+id/mainBtnRunLab06"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
